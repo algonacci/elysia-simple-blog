@@ -34,44 +34,72 @@
     ></script>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
+        fetchBlogs();
+      });
+
+      function fetchBlogs() {
         fetch("/blogs")
           .then((response) => response.json())
           .then((blogs) => {
             const blogPostsContainer = document.getElementById("blogPosts");
+            blogPostsContainer.innerHTML = ""; // Clear existing content
             blogs.forEach((blog) => {
               const card = document.createElement("div");
               card.className = "col-md-4 mb-4";
               card.innerHTML = `
-                            <div class="card">
-                                <img src="../uploads/${
-                                  blog.thumbnail
-                                }" class="card-img-top" alt="${blog.title}">
-                                <div class="card-body">
-                                    <h5 class="card-title">${blog.title}</h5>
-                                    <p class="card-text">${blog.content.substring(
-                                      0,
-                                      100
-                                    )}...</p>
-                                    <a href="/${
-                                      blog.id
-                                    }" class="btn btn-primary">Read More
-                                    </a>
-                                        <a href="/edit/${
-                                          blog.id
-                                        }" class="btn btn-outline-dark mx-1">
-                                            <i class="bi bi-pencil-fill"></i>
-                                        </a>
-                                        <a href="/delete/" class="btn btn-outline-dark mx-1">
-                                            <i class="bi bi-trash-fill"></i>
-                                        </a>
-                                </div>
-                            </div>
-                        `;
+                <div class="card">
+                    <img src="../uploads/${
+                      blog.thumbnail
+                    }" class="card-img-top" alt="${blog.title}">
+                    <div class="card-body">
+                        <h5 class="card-title">${blog.title}</h5>
+                        <p class="card-text">${blog.content.substring(
+                          0,
+                          100
+                        )}...</p>
+                        <a href="/read/${
+                          blog.id
+                        }" class="btn btn-primary">Read More</a>
+                        <a href="/edit/${
+                          blog.id
+                        }" class="btn btn-outline-dark mx-1">
+                            <i class="bi bi-pencil-fill"></i>
+                        </a>
+                        <button onclick="deleteBlog(${
+                          blog.id
+                        })" class="btn btn-outline-danger mx-1">
+                            <i class="bi bi-trash-fill"></i>
+                        </button>
+                    </div>
+                </div>
+              `;
               blogPostsContainer.appendChild(card);
             });
           })
           .catch((error) => console.error("Error fetching blog posts:", error));
-      });
+      }
+
+      function deleteBlog(blogId) {
+        console.log(blogId);
+        if (confirm("Are you sure you want to delete this blog post?")) {
+          fetch(`/delete/${blogId}`, {
+            method: "DELETE",
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.message) {
+                alert("Blog post deleted successfully");
+                fetchBlogs(); // Refresh the blog list
+              } else {
+                alert("Error deleting blog post: " + data.message);
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              alert("An error occurred while deleting the blog post");
+            });
+        }
+      }
     </script>
   </body>
 </html>
